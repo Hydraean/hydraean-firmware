@@ -43,62 +43,40 @@ const char index_html[] PROGMEM = R"rawliteral(
 <body>
   <h2>Seantinel</h2>
   <p>
-    <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
     <span class="dht-labels">Temperature</span>
-    <span id="temperature">%TEMPERATURE%</span>
+    <span id="temperature"> -- </span>
     <sup class="units">&deg;C</sup>
   </p>
   <p>
-    <i class="fas fa-tint" style="color:#00add6;"></i>
     <span class="dht-labels">Humidity</span>
-    <span id="humidity">%HUMIDITY%</span>
+    <span id="humidity"> -- </span>
     <sup class="units">%</sup>
   </p>
 </body>
 <script>
 setInterval(function ( ) {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      document.getElementById("temperature").innerHTML = this.responseText;
-    }
-  };
-  xhttp.open("GET", "/temperature", true);
-  xhttp.send();
+ fetch('http://192.168.4.1/temperature')
+  .then(response => response.json())
+  .then(data =>{
+    document.getElementById("temperature").innerHTML = data
+    })
 }, 2000 ) ;
 
 setInterval(function ( ) {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      document.getElementById("humidity").innerHTML = this.responseText;
-    }
-  };
-  xhttp.open("GET", "/humidity", true);
-  xhttp.send();
+ fetch('http://192.168.4.1/humidity')
+  .then(response => response.json())
+  .then(data =>{
+    document.getElementById("humidity").innerHTML = data
+    })
 }, 2000 ) ;
 </script>
 </html>)rawliteral";
-
-// Replaces placeholder with DHT values
-String processor(const String &var)
-{
-  //Serial.println(var);
-  if (var == "TEMPERATURE")
-  {
-    return readDHTTemperature();
-  }
-  else if (var == "HUMIDITY")
-  {
-    return readDHTHumidity();
-  }
-  return String();
-}
 
 void setup()
 {
   // Serial port for debugging purposes
   Serial.begin(115200);
+
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Setting AP (Access Point)…");
@@ -109,13 +87,16 @@ void setup()
   Serial.print("AP IP address: ");
   Serial.println(IP);
 
+
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", index_html, processor);
+    request->send_P(200, "text/html", index_html);
   });
+
   server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/plain", readDHTTemperature().c_str());
   });
+
   server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/plain", readDHTHumidity().c_str());
   });
