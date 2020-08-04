@@ -5,6 +5,7 @@ Hydrean Firmware v.1
 - can echo data accross nodes
 - can act as a gateway
 - can act as a node
+- can host a webserver and to allow an interface for control
 
 *********/
 
@@ -45,7 +46,8 @@ int counter = 0;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
-void setup(){
+void setup()
+{
 
   //reset OLED display via software
   pinMode(OLED_RST, OUTPUT);
@@ -94,7 +96,8 @@ void setup(){
   delay(2000);
 }
 
-void loop(){
+void loop()
+{
 
   Serial.print("Sending packet: ");
   Serial.println(counter);

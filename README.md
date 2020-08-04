@@ -13,4 +13,5 @@ Covers the implementation of the mesh protocol for the 2 types of devices on the
 
 1.) TTGO LoRa OLED v1
 > pinout of the board
+
 ![board_image](https://primalcortex.files.wordpress.com/2017/11/ttgolorapinout_v2.jpg)
