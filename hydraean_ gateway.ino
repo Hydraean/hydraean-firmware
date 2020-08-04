@@ -1,6 +1,9 @@
 /*
-Hydraean Node
-Firmware for Hydraean Node Devices
+Hydraean Gateway
+Firmware for Hydraean Gateway Devices
+
+Gateway Devices are designed to recieve data from nodes, and attempt to broadcast the data to the internet
+and be able to return a response if the data alert, or report has been confirmed form the internet.
 ----------------------------------
 Author: Bryce Narciso C. Mercines
 */
@@ -40,7 +43,7 @@ Author: Bryce Narciso C. Mercines
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 // Replace with your network credentials
-const char *ssid = "Hydraean_Node";
+const char *ssid = "Hydraean_Gateway";
 const char *password = "";
 
 // Create AsyncWebServer object on port 80
