@@ -9,12 +9,14 @@ const char *password = "REPLACE_WITH_YOUR_PASSWORD";
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-String readDHTTemperature(){
-    return String(random())}
+String readDHTTemperature()
+{
+  return String(random(100));
+}
 
 String readDHTHumidity()
 {
-  return String(random())
+  return String(random(100));
 }
 
 const char index_html[] PROGMEM = R"rawliteral(
@@ -40,7 +42,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <h2>ESP32 DHT Server</h2>
+  <h2>Seantinel</h2>
   <p>
     <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
     <span class="dht-labels">Temperature</span>

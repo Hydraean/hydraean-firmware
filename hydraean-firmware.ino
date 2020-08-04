@@ -1,128 +1,129 @@
-/*********
-Hydrean Firmware v.1
+// Import required libraries
+#include "WiFi.h"
+#include "ESPAsyncWebServer.h"
 
-- can both sender and reciever functionaily
-- can echo data accross nodes
-- can act as a gateway
-- can act as a node
-- can host a webserver and to allow an interface for control
+// Replace with your network credentials
+const char *ssid = "Hydraean";
+const char *password = "";
 
-*********/
+// Create AsyncWebServer object on port 80
+AsyncWebServer server(80);
 
-//Libraries for LoRa
+String readDHTTemperature()
+{
+  return String(random(100));
+}
 
-#include <SPI.h>
-#include <LoRa.h>
+String readDHTHumidity()
+{
+  return String(random(100));
+}
 
-//Libraries for OLED Display
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+     font-family: Arial;
+     display: inline-block;
+     margin: 0px auto;
+     text-align: center;
+    }
+    h2 { font-size: 3.0rem; }
+    p { font-size: 3.0rem; }
+    .units { font-size: 1.2rem; }
+    .dht-labels{
+      font-size: 1.5rem;
+      vertical-align:middle;
+      padding-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Seantinel</h2>
+  <p>
+    <i class="fas fa-thermometer-half" style="color:#059e8a;"></i>
+    <span class="dht-labels">Temperature</span>
+    <span id="temperature">%TEMPERATURE%</span>
+    <sup class="units">&deg;C</sup>
+  </p>
+  <p>
+    <i class="fas fa-tint" style="color:#00add6;"></i>
+    <span class="dht-labels">Humidity</span>
+    <span id="humidity">%HUMIDITY%</span>
+    <sup class="units">%</sup>
+  </p>
+</body>
+<script>
+setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("temperature").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "/temperature", true);
+  xhttp.send();
+}, 2000 ) ;
 
-//define the pins used by the LoRa transceiver module
+setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("humidity").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "/humidity", true);
+  xhttp.send();
+}, 2000 ) ;
+</script>
+</html>)rawliteral";
 
-#define SCK 5
-#define MISO 19
-#define MOSI 27
-#define SS 18
-#define RST 14
-#define DIO0 26
-
-// 923MHz
-
-#define BAND 923E6
-
-//OLED pins
-
-#define OLED_SDA 4
-#define OLED_SCL 15
-#define OLED_RST 16
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-//packet counter
-
-int counter = 0;
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
+// Replaces placeholder with DHT values
+String processor(const String &var)
+{
+  //Serial.println(var);
+  if (var == "TEMPERATURE")
+  {
+    return readDHTTemperature();
+  }
+  else if (var == "HUMIDITY")
+  {
+    return readDHTHumidity();
+  }
+  return String();
+}
 
 void setup()
 {
-
-  //reset OLED display via software
-  pinMode(OLED_RST, OUTPUT);
-  digitalWrite(OLED_RST, LOW);
-  delay(20);
-  digitalWrite(OLED_RST, HIGH);
-
-  //initialize OLED
-  Wire.begin(OLED_SDA, OLED_SCL);
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false))
-  { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-    for (;;)
-
-      ; // Don't proceed, loop forever
-  }
-
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.print("LORA SENDER ");
-  display.display();
-
-  //initialize Serial Monitor
-
+  // Serial port for debugging purposes
   Serial.begin(115200);
 
-  Serial.println("LoRa Sender Test");
+  // Connect to Wi-Fi network with SSID and password
+  Serial.print("Setting AP (Access Point)…");
+  // Remove the password parameter, if you want the AP (Access Point) to be open
+  WiFi.softAP(ssid, password);
 
-  //SPI LoRa pins
-  SPI.begin(SCK, MISO, MOSI, SS);
-  //setup LoRa transceiver module
-  LoRa.setPins(SS, RST, DIO0);
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
 
-  if (!LoRa.begin(BAND))
-  {
-    Serial.println("Starting LoRa failed!");
-    while (1)
-      ;
-  }
-  Serial.println("LoRa Initializing OK!");
-  display.setCursor(0, 10);
-  display.print("LoRa Initializing OK!");
-  display.display();
-  delay(2000);
+  // Route for root / web page
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", index_html, processor);
+  });
+  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/plain", readDHTTemperature().c_str());
+  });
+  server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/plain", readDHTHumidity().c_str());
+  });
+
+  // Start server
+  server.begin();
 }
 
 void loop()
 {
-
-  Serial.print("Sending packet: ");
-  Serial.println(counter);
-
-  //Send LoRa packet to receiver
-
-  LoRa.beginPacket();
-  LoRa.print("hello ");
-  LoRa.print(counter);
-  LoRa.endPacket();
-
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.println("HYDRAEAN SENDER");
-  display.println(BAND);
-  display.setCursor(0, 20);
-  display.setTextSize(1);
-  display.print("LoRa packet sent.");
-  display.setCursor(0, 30);
-  display.print("Counter:");
-  display.setCursor(50, 30);
-  display.print(counter);
-  display.display();
-
-  counter++;
-
-  delay(10000);
 }
