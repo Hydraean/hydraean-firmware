@@ -103,6 +103,15 @@ void setup()
   WiFi.begin(ssid, password);
 }
 
+// Send LoRa packet
+
+void sendData(String LORA_DATA)
+{
+  LoRa.beginPacket();
+  LoRa.print(LORA_DATA);
+  LoRa.endPacket();
+}
+
 // update OLED Screen
 
 void setScreen(int yrssi, String message)
@@ -128,9 +137,9 @@ void setScreen(int yrssi, String message)
 void gateWayConnect(String LORA_DATA, int xrssi)
 {
 
+  setScreen(xrssi, "Connection Attempt!");
   if (WiFi.status() == WL_CONNECTED)
   {
-    setScreen(xrssi, "Connection Attempt!");
     String reqURL = API_URL + "?data=" + LORA_DATA;
     http.begin(reqURL);
     http.GET();
@@ -141,7 +150,9 @@ void gateWayConnect(String LORA_DATA, int xrssi)
   }
   else
   {
-    setScreen(xrssi, "no connection!");
+    sendData(LORA_DATA);
+    setScreen(xrssi, "Echoing..");
+    display.setCursor(0, 10);
   }
 }
 

@@ -39,6 +39,8 @@ Author: Bryce Narciso C. Mercines
 // Initialize Screen
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
+String LoRaData;
+
 // Replace with your network credentials
 const char *ssid = "Hydraean_Node";
 const char *password = "";
@@ -119,6 +121,19 @@ void sendData(String LORA_DATA)
   LoRa.endPacket();
 }
 
+void setScreen(String Message)
+{
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("HYDRAEAN NODE");
+  display.setCursor(0, 10);
+  IPAddress IP = WiFi.softAPIP();
+  display.println(IP);
+  display.setCursor(0, 20);
+  display.println(Message);
+  display.display();
+}
+
 void setup()
 {
   // Serial port for debugging purposes
@@ -157,19 +172,11 @@ void setup()
     while (1)
       ;
   }
-  Serial.println("LoRa Initializing OK!");
-  display.setCursor(0, 10);
-  display.print("LoRa Initializing OK!");
-  display.display();
-  delay(2000);
 
   // Remove the password parameter, if you want the AP (Access Point) to be open
   WiFi.softAP(ssid, password);
 
-  IPAddress IP = WiFi.softAPIP();
-  display.println("AP IP address: ");
-  display.println(IP);
-  display.display();
+  setScreen("BOOT: OK");
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -200,4 +207,19 @@ void setup()
 
 void loop()
 {
+  //try to parse packet
+  //  int packetSize = LoRa.parsePacket();
+  //  if (packetSize)
+  //  {
+  //    //received a packet
+  //
+  //    //read packet
+  //    while (LoRa.available())
+  //    {
+  //      LoRaData = LoRa.readString();
+  //      sendData(LoRaData);
+  //      Serial.println("Recieved Echo Data:---> " + LoRaData);
+  //      delay(2000);
+  //    }
+  //}
 }
