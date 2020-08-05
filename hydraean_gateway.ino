@@ -106,21 +106,43 @@ void setup()
   display.display();
 }
 
+// update OLED Screen
+
+void setScreen(int yrssi, String message)
+{
+  // Dsiplay information
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("HYDRAEAN GATEWAY");
+  display.setCursor(0, 20);
+  display.print("Activity");
+  display.setCursor(0, 30);
+  display.print(message);
+  display.setCursor(0, 40);
+  display.print("RSSI:");
+  display.setCursor(30, 40);
+  display.print(yrssi);
+  display.display();
+}
+
 // attempt to send data to the internet
 
-void gateWayConnect(String data)
+void gateWayConnect(String LORA_DATA, int xrssi)
 {
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
 
+  setScreen(xrssi, "Attempting Gateway connection");
+
   while (WiFi.status() != WL_CONNECTED)
   {
-
-    http.begin(API_URL);
+    http.begin(API_URL + "?data=" + LORA_DATA);
     int httpCode = http.GET();
+    setScreen(xrssi, "Data sent to Gateway!");
   }
 }
 
+//
 void loop()
 {
   //try to parse packet
@@ -128,7 +150,6 @@ void loop()
   if (packetSize)
   {
     //received a packet
-    Serial.print("Received packet ");
 
     //read packet
     while (LoRa.available())
@@ -139,22 +160,6 @@ void loop()
 
     //print RSSI of packet
     int rssi = LoRa.packetRssi();
-    Serial.print(" with RSSI ");
-    Serial.println(rssi);
-
-    // Dsiplay information
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println("HYDRAEAN RECEIVER");
-    display.println(BAND);
-    display.setCursor(0, 20);
-    display.print("Received packet:");
-    display.setCursor(0, 30);
-    display.print(LoRaData);
-    display.setCursor(0, 40);
-    display.print("RSSI:");
-    display.setCursor(30, 40);
-    display.print(rssi);
-    display.display();
+    gateWayConnect(LoRaData, rssi);
   }
 }
