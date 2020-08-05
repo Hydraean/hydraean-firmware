@@ -112,6 +112,13 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
+void sendData(String LORA_DATA)
+{
+  LoRa.beginPacket();
+  LoRa.print(LORA_DATA);
+  LoRa.endPacket();
+}
+
 void setup()
 {
   // Serial port for debugging purposes
@@ -179,16 +186,12 @@ void setup()
 
   server.on("/alert", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/plain", "Sending Alert");
-    LoRa.beginPacket();
-    LoRa.print("Alert!");
-    LoRa.endPacket();
+    sendData("Alert!");
   });
 
   server.on("/help", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/plain", "Sending Help");
-    LoRa.beginPacket();
-    LoRa.print("Help!");
-    LoRa.endPacket();
+    sendData("Help");
   });
 
   // Start server
