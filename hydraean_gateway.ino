@@ -2,7 +2,6 @@
 /*
 Hydraean Gateway
 Firmware for Hydraean Gateway Devices
-
 Gateway Devices are designed to recieve data from nodes, and attempt to broadcast the data to the internet
 and be able to return a response if the data alert, or report has been confirmed form the internet.
 ----------------------------------
