@@ -1,3 +1,4 @@
+
 /*
 Hydraean Gateway
 Firmware for Hydraean Gateway Devices
@@ -8,7 +9,10 @@ and be able to return a response if the data alert, or report has been confirmed
 Author: Bryce Narciso C. Mercines
 */
 
-// network libraries
+// API URL
+String API_URL = "http://192.168.1.4:8000/";
+
+#include <HTTPClient.h>
 #include "WiFi.h"
 
 //Libraries for LoRa
@@ -43,6 +47,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 // LoRa Data
 String LoRaData;
+
+HTTPClient http;
 
 // Replace with your network credentials
 const char *ssid = "PLDTHOMEFIBR9VY8P";
@@ -100,15 +106,18 @@ void setup()
   display.display();
 }
 
-void connect()
+// attempt to send data to the internet
+
+void gateWayConnect(String data)
 {
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(1000);
-    Serial.println("Connecting to WiFi..");
+
+    http.begin(API_URL);
+    int httpCode = http.GET();
   }
 }
 
