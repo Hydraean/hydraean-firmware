@@ -8,6 +8,9 @@ and be able to return a response if the data alert, or report has been confirmed
 Author: Bryce Narciso C. Mercines
 */
 
+// network libraries
+#include "WiFi.h"
+
 //Libraries for LoRa
 #include <SPI.h>
 #include <LoRa.h>
@@ -38,9 +41,15 @@ Author: Bryce Narciso C. Mercines
 // Initialize Screen
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
+// LoRa Data
+String LoRaData;
+
 // Replace with your network credentials
 const char *ssid = "PLDTHOMEFIBR9VY8P";
 const char *password = "PLDTWIFIT2Z5R";
+
+// gateway unique id
+const char *uid = "HTX-00001";
 
 void setup()
 {
