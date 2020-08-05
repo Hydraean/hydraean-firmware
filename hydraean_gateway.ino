@@ -101,9 +101,7 @@ void setup()
   display.display();
   delay(2000);
 
-  // Print ESP32 Local IP Address
-  display.println(WiFi.localIP());
-  display.display();
+  WiFi.begin(ssid, password);
 }
 
 // update OLED Screen
@@ -114,6 +112,7 @@ void setScreen(int yrssi, String message)
   display.clearDisplay();
   display.setCursor(0, 0);
   display.println("HYDRAEAN GATEWAY");
+  display.println(WiFi.localIP());
   display.setCursor(0, 20);
   display.print("Activity");
   display.setCursor(0, 30);
@@ -129,20 +128,24 @@ void setScreen(int yrssi, String message)
 
 void gateWayConnect(String LORA_DATA, int xrssi)
 {
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
 
-  setScreen(xrssi, "Attempting Gateway connection");
-
-  while (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() == WL_CONNECTED)
   {
-    http.begin(API_URL + "?data=" + LORA_DATA);
-    int httpCode = http.GET();
-    setScreen(xrssi, "Data sent to Gateway!");
+    setScreen(xrssi, "Connection Attempt!");
+    String reqURL = API_URL + "?data=" + LORA_DATA;
+    http.begin(reqURL);
+    http.GET();
+    Serial.println(reqURL);
+    setScreen(xrssi, "Data sent!");
+    http.end(); //Close connection
+    delay(2000);
+  }
+  else
+  {
+    setScreen(xrssi, "no connection!");
   }
 }
 
-//
 void loop()
 {
   //try to parse packet
