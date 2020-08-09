@@ -13,11 +13,6 @@ Author: Bryce Narciso C. Mercines
 #include <SPI.h>
 #include <LoRa.h>
 
-//Libraries for OLED Display
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
 //define the pins used by the LoRa transceiver module
 #define SCK 5
 #define MISO 19
@@ -28,16 +23,6 @@ Author: Bryce Narciso C. Mercines
 
 // Most performant ISM Band (Philippines) good RSSI
 #define BAND 923E6
-
-//OLED pins
-#define OLED_SDA 4
-#define OLED_SCL 15
-#define OLED_RST 16
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-// Initialize Screen
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 String LoRaData;
 
@@ -121,45 +106,10 @@ void sendData(String LORA_DATA)
   LoRa.endPacket();
 }
 
-void setScreen(String Message)
-{
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.println("HYDRAEAN NODE");
-  display.setCursor(0, 10);
-  IPAddress IP = WiFi.softAPIP();
-  display.println(IP);
-  display.setCursor(0, 20);
-  display.println(Message);
-  display.display();
-}
-
 void setup()
 {
   // Serial port for debugging purposes
   Serial.begin(115200);
-
-  //reset OLED display via software
-  pinMode(OLED_RST, OUTPUT);
-  digitalWrite(OLED_RST, LOW);
-  delay(20);
-  digitalWrite(OLED_RST, HIGH);
-
-  //initialize OLED
-  Wire.begin(OLED_SDA, OLED_SCL);
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false))
-  { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-    for (;;)
-      ; // Don't proceed, loop forever
-  }
-
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.print("HYDRAEAN NODE");
-  display.display();
 
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
@@ -175,8 +125,6 @@ void setup()
 
   // Remove the password parameter, if you want the AP (Access Point) to be open
   WiFi.softAP(ssid, password);
-
-  setScreen("BOOT: OK");
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
