@@ -74,6 +74,12 @@ const char index_html[] PROGMEM = R"rawliteral(
      <button onclick="sendHelp()">
        Call for Rescue
      </button>
+     <textarea placeholder="data (500 chars)" id="text" style="height: 200px;"></textarea>
+     <br/>
+     <button onclick="sendText()">
+       Send Text
+     </button>
+
      <div>
        </center>
 </body>
@@ -85,6 +91,11 @@ const char index_html[] PROGMEM = R"rawliteral(
    function sendHelp(){
      fetch("http://192.168.4.1/help")
   }
+
+  function sendText(){
+     let data = document.getElementById('text').value;
+     fetch(`http://192.168.4.1/report?text=${data}`)
+  }
 </script>
 </html>
 )rawliteral";
@@ -94,6 +105,30 @@ void sendData(String LORA_DATA)
   LoRa.beginPacket();
   LoRa.print(LORA_DATA);
   LoRa.endPacket();
+}
+
+void echoMechanism()
+{
+  // testing echo
+  int packetSize = LoRa.parsePacket();
+  if (packetSize)
+  {
+    //received a packet
+
+    //read packet
+    while (LoRa.available())
+    {
+      LoRaData = LoRa.readString();
+      sendData(LoRaData);
+      Serial.println("Recieved Echo Data:---> " + LoRaData);
+      delay(2000);
+    }
+  }
+  else
+  {
+    Serial.println("Idle..");
+    delay(3000);
+  }
 }
 
 void setup()
@@ -125,32 +160,35 @@ void setup()
     request->send_P(200, "text/plain", "Sending Alert");
     sendData("Alert!");
     Serial.println("sending data!!! Alert");
-
-    // testing echo
-    int packetSize = LoRa.parsePacket();
-    if (packetSize)
-    {
-      //received a packet
-
-      //read packet
-      while (LoRa.available())
-      {
-        LoRaData = LoRa.readString();
-        sendData(LoRaData);
-        Serial.println("Recieved Echo Data:---> " + LoRaData);
-        delay(2000);
-      }
-    }
-    else
-    {
-      Serial.println("Waitig processs");
-      delay(3000);
-    }
+    echoMechanism();
   });
 
+  // for sending help (test)
   server.on("/help", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/plain", "Sending Help");
     sendData("Help");
+  });
+
+  // for sending data (test)
+  server.on("/report", HTTP_GET, [](AsyncWebServerRequest *request) {
+    // try and capture parameters
+    int paramsNr = request->params();
+
+    for (int i = 0; i < paramsNr; i++)
+    {
+
+      AsyncWebParameter *p = request->getParam(i);
+      Serial.print("Param name: ");
+      Serial.println(p->name());
+      Serial.print("Param value: ");
+      Serial.println(p->value());
+      Serial.println("------");
+
+      sendData(p->value());
+      echoMechanism();
+    }
+
+    request->send_P(200, "text/plain", "ok!");
   });
 
   // Start server
@@ -159,24 +197,5 @@ void setup()
 
 void loop()
 {
-  //try to parse packet
-  int packetSize = LoRa.parsePacket();
-  if (packetSize)
-  {
-    //received a packet
-
-    //read packet
-    while (LoRa.available())
-    {
-      LoRaData = LoRa.readString();
-      sendData(LoRaData);
-      Serial.println("Recieved Echo Data:---> " + LoRaData);
-      delay(2000);
-    }
-  }
-  else
-  {
-    Serial.println("Waitig processs");
-    delay(3000);
-  }
+  echoMechanism();
 }
