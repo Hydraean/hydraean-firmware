@@ -33,16 +33,6 @@ const char *password = "";
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-String readDHTTemperature()
-{
-  return String(random(100));
-}
-
-String readDHTHumidity()
-{
-  return String(random(100));
-}
-
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -131,17 +121,31 @@ void setup()
     request->send_P(200, "text/html", index_html);
   });
 
-  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/plain", readDHTTemperature().c_str());
-  });
-
-  server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/plain", readDHTHumidity().c_str());
-  });
-
   server.on("/alert", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/plain", "Sending Alert");
     sendData("Alert!");
+    Serial.println("sending data!!! Alert");
+
+    // testing echo
+    int packetSize = LoRa.parsePacket();
+    if (packetSize)
+    {
+      //received a packet
+
+      //read packet
+      while (LoRa.available())
+      {
+        LoRaData = LoRa.readString();
+        sendData(LoRaData);
+        Serial.println("Recieved Echo Data:---> " + LoRaData);
+        delay(2000);
+      }
+    }
+    else
+    {
+      Serial.println("Waitig processs");
+      delay(3000);
+    }
   });
 
   server.on("/help", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -156,18 +160,23 @@ void setup()
 void loop()
 {
   //try to parse packet
-  //  int packetSize = LoRa.parsePacket();
-  //  if (packetSize)
-  //  {
-  //    //received a packet
-  //
-  //    //read packet
-  //    while (LoRa.available())
-  //    {
-  //      LoRaData = LoRa.readString();
-  //      sendData(LoRaData);
-  //      Serial.println("Recieved Echo Data:---> " + LoRaData);
-  //      delay(2000);
-  //    }
-  //}
+  int packetSize = LoRa.parsePacket();
+  if (packetSize)
+  {
+    //received a packet
+
+    //read packet
+    while (LoRa.available())
+    {
+      LoRaData = LoRa.readString();
+      sendData(LoRaData);
+      Serial.println("Recieved Echo Data:---> " + LoRaData);
+      delay(2000);
+    }
+  }
+  else
+  {
+    Serial.println("Waitig processs");
+    delay(3000);
+  }
 }
