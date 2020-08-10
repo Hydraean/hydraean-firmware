@@ -51,7 +51,8 @@ HTTPClient http;
 
 // Replace with your network credentials
 const char *ssid = "PLDTHOMEFIBR9VY8P";
-const char *password = "PLDTWIFIT2Z5R";
+//const char *password = "PLDTWIFIT2Z5R";
+const char *password = "PLDTWIFIT2Z5Rssss";
 
 // gateway unique id
 const char *uid = "HTX-00001";
@@ -150,9 +151,14 @@ void gateWayConnect(String LORA_DATA, int xrssi)
   }
   else
   {
-    sendData(LORA_DATA);
     setScreen(xrssi, "Echoing..");
-    display.setCursor(0, 10);
+    sendData(LORA_DATA);
+    delay(2000);
+    sendData(LORA_DATA);
+    delay(2000);
+    sendData(LORA_DATA);
+    delay(2000);
+    setScreen(xrssi, "READY");
   }
 }
 
