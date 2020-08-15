@@ -9,7 +9,7 @@ Author: Bryce Narciso C. Mercines
 */
 
 // API URL
-String API_URL = "http://192.168.1.4:8000/";
+String API_URL = "http://192.168.1.4:7000";
 
 #include <HTTPClient.h>
 #include "WiFi.h"
@@ -51,8 +51,8 @@ HTTPClient http;
 
 // Replace with your network credentials
 const char *ssid = "PLDTHOMEFIBR9VY8P";
-//const char *password = "PLDTWIFIT2Z5R";
-const char *password = "PLDTWIFIT2Z5Rssss";
+const char *password = "PLDTWIFIT2Z5R";
+//const char *password = "PLDTWIFIT2Z5Rssss";
 
 // gateway unique id
 const char *uid = "HTX-00001";
@@ -141,12 +141,37 @@ void gateWayConnect(String LORA_DATA, int xrssi)
   setScreen(xrssi, "Connection Attempt!");
   if (WiFi.status() == WL_CONNECTED)
   {
-    String reqURL = API_URL + "?data=" + LORA_DATA;
-    http.begin(reqURL);
-    http.GET();
-    Serial.println(reqURL);
-    setScreen(xrssi, "Data sent!");
+
+    // send report data
+    String reqURL = "data=" + LORA_DATA;
+    http.begin(API_URL + "/report");
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    http.POST(reqURL);
+    setScreen(xrssi, "report sent!");
     http.end(); //Close connection
+
+    // get data feed
+    //    http.begin(API_URL+"/network/feed");
+    //    int getFeed = http.GET();
+    //    if(getFeed > 0){
+    //    setScreen(xrssi, "EMIT DATA..");
+    //    String FeedData = String(http.getString());
+    //
+    //    // broadcast advisories multiple times
+    //    if(FeedData.length() > 10){
+    //    Serial.println("Broadcasting Feed");
+    //      sendData(FeedData);
+    //      delay(2000);
+    //      sendData(FeedData);
+    //      delay(2000);
+    //      sendData(FeedData);
+    //      delay(2000);
+    //       setScreen(xrssi, "READY");
+    //    }
+    //
+    //    }
+    //    http.end();
+
     delay(2000);
   }
   else

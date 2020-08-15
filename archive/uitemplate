@@ -405,16 +405,16 @@ function setInfo(){
   let name = el('#name')
   let addr = el('#address')
 
-  name.value = localStorage.name && localStorage.name;
-  addr.value = localStorage.address && localStorage.address
+  name.value = localStorage.name ? localStorage.name : "";
+  addr.value = localStorage.address ? localStorage.address : "";
 }
 
 function saveInfo() {
   let name = el('#name')
   let addr = el('#address')
 
-    localStorage.name = name.value === "" ? name.value:"";
-    localStorage.address = addr.value === "" ? addr.value:"";
+    localStorage.name = name.value !== "" ? name.value:"";
+    localStorage.address = addr.value !== "" ? addr.value:"";
   setInfo()
 
   alert('Saved Changes!')
