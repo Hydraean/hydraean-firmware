@@ -9,6 +9,13 @@ Author: Bryce Narciso C. Mercines
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 
+// for Parsing GPS Data
+#include <TinyGPS++.h>
+
+// The TinyGPS++ object
+TinyGPSPlus gps;
+String GPS_DATA;
+
 //Libraries for LoRa
 #include <SPI.h>
 #include <LoRa.h>
@@ -455,21 +462,19 @@ void echoMechanism()
     {
       LoRaData = LoRa.readString();
       sendData(LoRaData);
-      Serial.println("Recieved Echo Data:---> " + LoRaData);
       delay(2000);
     }
   }
   else
   {
-    Serial.println("Idle..");
     delay(3000);
   }
 }
 
 void setup()
 {
-  // Serial port for debugging purposes
-  Serial.begin(115200);
+  // Serial Port for communicating to GPS Module
+  Serial.begin(9600);
 
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
@@ -478,7 +483,7 @@ void setup()
 
   if (!LoRa.begin(BAND))
   {
-    Serial.println("Starting LoRa failed!");
+    // Staring LoRa Fails
     while (1)
       ;
   }
@@ -492,8 +497,8 @@ void setup()
   });
 
   // data store for current packet
-  server.on("/feed", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/json", LoRaData.c_str());
+  server.on("/gps", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/json", GPS_DATA.c_str());
   });
 
   // for sending data (test)
@@ -505,12 +510,6 @@ void setup()
     {
 
       AsyncWebParameter *p = request->getParam(i);
-      Serial.print("Param name: ");
-      Serial.println(p->name());
-      Serial.print("Param value: ");
-      Serial.println(p->value());
-      Serial.println("------");
-
       sendData(p->value());
       echoMechanism();
     }
@@ -524,5 +523,18 @@ void setup()
 
 void loop()
 {
+
+  // Testing GPS data output
+  while (Serial.available() > 0)
+  {
+    gps.encode(Serial.read());
+    if (gps.location.isUpdated())
+    {
+
+      GPS_DATA = "{lat: " + String(gps.location.lat()) + ",long: " + String(gps.location.lng()) + "}";
+    }
+  }
+
+  // for echoing data
   echoMechanism();
 }
