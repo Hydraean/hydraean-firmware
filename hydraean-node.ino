@@ -14,6 +14,7 @@ Author: Bryce Narciso C. Mercines
 
 // The TinyGPS++ object
 TinyGPSPlus gps;
+
 String GPS_DATA;
 
 //Libraries for LoRa
@@ -527,7 +528,7 @@ void setup()
 
       String webData = p->value();
 
-      String formData = "{\"payload\":\"" + webData + ",\"location\": {\"lat\": 121.92" + random(14000, 18736) + ", \"lng\": 14.54" + random(1865, 95063) + "}}";
+      String formData = "{\"payload\":\"" + webData + ",\"location\": " + GPS_DATA + "}}";
 
       sendData(formData);
       echoMechanism();
@@ -542,7 +543,7 @@ void setup()
 
 String report(String type, String msg, String title)
 {
-  return "{\"details\":\"" + msg + "\",\"device_id\":\"" + UID + "\",\"type\":\"" + type + "\",\"title\":\"" + title + "\",\"name\":\"" + title + "\",\"reportee\":\"N/A\",\"source_platform\":\"node\",\"coordinates\":{\"long\":121.92" + random(14000, 18736) + ",\"lat\":14.54" + random(1865, 95063) + "}}";
+  return "{\"details\":\"" + msg + "\",\"device_id\":\"" + UID + "\",\"type\":\"" + type + "\",\"title\":\"" + title + "\",\"name\":\"" + title + "\",\"reportee\":\"N/A\",\"source_platform\":\"node\",\"coordinates\":" + GPS_DATA + "}";
 }
 
 void loop()
