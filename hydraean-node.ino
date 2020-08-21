@@ -28,13 +28,24 @@ String GPS_DATA;
 #define RST 14
 #define DIO0 26
 
+// define hardware triggers
+#define RESCUE_BTN 17
+#define ILLEGAL_BTN 16
+
+// LED Indicator
+#define INDICATOR 23
+
 // Most performant ISM Band (Philippines) good RSSI
 #define BAND 923E6
+
+// device unique ID
+
+String UID = "HN-00001";
 
 String LoRaData;
 
 // Replace with your network credentials
-const char *ssid = "Hydraean_Node";
+const char *ssid = "Seantinel_Node";
 const char *password = "";
 
 // Create AsyncWebServer object on port 80
@@ -444,9 +455,11 @@ setInterval(()=>{
 
 void sendData(String LORA_DATA)
 {
+  digitalWrite(INDICATOR, HIGH);
   LoRa.beginPacket();
   LoRa.print(LORA_DATA);
   LoRa.endPacket();
+  digitalWrite(INDICATOR, LOW);
 }
 
 void echoMechanism()
@@ -476,6 +489,13 @@ void setup()
   // Serial Port for communicating to GPS Module
   Serial.begin(9600);
 
+  // set manual button pinmode
+  pinMode(RESCUE_BTN, INPUT);
+  pinMode(RESCUE_BTN, INPUT);
+
+  // LED INDICATOR
+  pinMode(INDICATOR, OUTPUT);
+
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
   //setup LoRa transceiver module
@@ -483,7 +503,7 @@ void setup()
 
   if (!LoRa.begin(BAND))
   {
-    // Staring LoRa Fails
+    // Starting LoRa Fails
     while (1)
       ;
   }
@@ -496,11 +516,6 @@ void setup()
     request->send_P(200, "text/html", index_html);
   });
 
-  // data store for current packet
-  server.on("/gps", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/json", GPS_DATA.c_str());
-  });
-
   // for sending data (test)
   server.on("/report", HTTP_GET, [](AsyncWebServerRequest *request) {
     // try and capture parameters
@@ -508,17 +523,26 @@ void setup()
 
     for (int i = 0; i < paramsNr; i++)
     {
-
       AsyncWebParameter *p = request->getParam(i);
-      sendData(p->value());
+
+      String webData = p->value();
+
+      String formData = "{\"payload\":\"" + webData + ",\"location\": {\"lat\": 121.92" + random(14000, 18736) + ", \"lng\": 14.54" + random(1865, 95063) + "}}";
+
+      sendData(formData);
       echoMechanism();
     }
 
-    request->send_P(200, "text/plain", "ok!");
+    request->send_P(200, "text/plain", "recieved");
   });
 
   // Start server
   server.begin();
+}
+
+String report(String type, String msg, String title)
+{
+  return "{\"details\":\"" + msg + "\",\"device_id\":\"" + UID + "\",\"type\":\"" + type + "\",\"title\":\"" + title + "\",\"name\":\"" + title + "\",\"reportee\":\"N/A\",\"source_platform\":\"node\",\"coordinates\":{\"long\":121.92" + random(14000, 18736) + ",\"lat\":14.54" + random(1865, 95063) + "}}";
 }
 
 void loop()
@@ -530,9 +554,23 @@ void loop()
     gps.encode(Serial.read());
     if (gps.location.isUpdated())
     {
-
-      GPS_DATA = "{lat: " + String(gps.location.lat()) + ",long: " + String(gps.location.lng()) + "}";
+      GPS_DATA = "{\"lat\": " + String(gps.location.lat()) + ",\"long\": " + String(gps.location.lng()) + "}";
     }
+  }
+
+  int EMB = digitalRead(RESCUE_BTN);
+  int IFB = digitalRead(ILLEGAL_BTN);
+
+  if (EMB == HIGH)
+  {
+    String eReport = report("emergency", "EMERGENCY DISTRESS CALL", "EMERGENCY DISTRESS CALL");
+    sendData(eReport);
+  }
+
+  if (IFB == HIGH)
+  {
+    String eReport = report("illegal_fishing", "Illegal Fishing Activity", "Illegal Fishing Alert!");
+    sendData(eReport);
   }
 
   // for echoing data
