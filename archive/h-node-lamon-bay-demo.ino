@@ -42,7 +42,6 @@ String GPS_DATA;
 
 String UID = "HN-00001";
 
-
 String LoRaData;
 
 // Replace with your network credentials
@@ -456,11 +455,11 @@ setInterval(()=>{
 
 void sendData(String LORA_DATA)
 {
-  digitalWrite(INDICATOR,HIGH);
+  digitalWrite(INDICATOR, HIGH);
   LoRa.beginPacket();
   LoRa.print(LORA_DATA);
   LoRa.endPacket();
-  digitalWrite(INDICATOR,LOW);
+  digitalWrite(INDICATOR, LOW);
 }
 
 void echoMechanism()
@@ -517,7 +516,6 @@ void setup()
     request->send_P(200, "text/html", index_html);
   });
 
-
   // for sending data (test)
   server.on("/report", HTTP_GET, [](AsyncWebServerRequest *request) {
     // try and capture parameters
@@ -529,7 +527,7 @@ void setup()
 
       String webData = p->value();
 
-      String formData = "{\"payload\":\""+webData+",\"location\": {\"lat\": 121.92"+random(14000,18736)+", \"lng\": 14.54"+random(1865, 95063)+"}}";
+      String formData = "{\"payload\":\"" + webData + ",\"location\": {\"long\": 121.92" + random(14000, 18736) + ", \"lat\": 14.54" + random(1865, 95063) + "}}";
 
       sendData(formData);
       echoMechanism();
@@ -542,39 +540,38 @@ void setup()
   server.begin();
 }
 
-
-
-String report(String type, String msg, String title){
-  return "{\"details\":\""+msg+"\",\"device_id\":\""+UID+"\",\"type\":\""+type+"\",\"title\":\""+title+"\",\"name\":\""+title+"\",\"reportee\":\"N/A\",\"source_platform\":\"node\",\"coordinates\":{\"long\":121.92"+random(14000,18736)+",\"lat\":14.54"+random(1865, 95063)+"}}";
+String report(String type, String msg, String title)
+{
+  return "{\"details\":\"" + msg + "\",\"device_id\":\"" + UID + "\",\"type\":\"" + type + "\",\"title\":\"" + title + "\",\"name\":\"" + title + "\",\"reportee\":\"N/A\",\"source_platform\":\"node\",\"coordinates\":{\"long\":121.92" + random(14000, 18736) + ",\"lat\":14.54" + random(1865, 95063) + "}}";
 }
-
-
 
 void loop()
 {
 
   // Testing GPS data output
-  while (Serial.available() > 0){
+  while (Serial.available() > 0)
+  {
     gps.encode(Serial.read());
-    if (gps.location.isUpdated()){
-     GPS_DATA = "{\"lat\": "+String(gps.location.lat())+",\"long\": "+String(gps.location.lng())+ "}";
+    if (gps.location.isUpdated())
+    {
+      GPS_DATA = "{\"lat\": " + String(gps.location.lat()) + ",\"long\": " + String(gps.location.lng()) + "}";
     }
   }
 
   int EMB = digitalRead(RESCUE_BTN);
   int IFB = digitalRead(ILLEGAL_BTN);
 
-  if(EMB == HIGH){
-     String eReport = report("emergency", "EMERGENCY DISTRESS CALL", "EMERGENCY DISTRESS CALL");
-     sendData(eReport);
+  if (EMB == HIGH)
+  {
+    String eReport = report("emergency", "EMERGENCY DISTRESS CALL", "EMERGENCY DISTRESS CALL");
+    sendData(eReport);
   }
 
-  if(IFB == HIGH){
-     String eReport = report("illegal_fishing", "Illegal Fishing Activity", "Illegal Fishing Alert!");
-     sendData(eReport);
+  if (IFB == HIGH)
+  {
+    String eReport = report("illegal_fishing", "Illegal Fishing Activity", "Illegal Fishing Alert!");
+    sendData(eReport);
   }
-
-
 
   // for echoing data
   echoMechanism();
