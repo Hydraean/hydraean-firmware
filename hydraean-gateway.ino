@@ -50,10 +50,8 @@ String LoRaData;
 HTTPClient http;
 
 // Replace with your network credentials
-const char *ssid = "PLDTHOMEFIBR9VY8P";
-const char *password = "PLDTWIFIT2Z5R";
-//const char *password = "PLDTWIFIT2Z5Rssss";
-
+const char *ssid = "WIFI_SSID";
+const char *password = "WIFI_PASSWORD";
 
 
 // gateway unique id
