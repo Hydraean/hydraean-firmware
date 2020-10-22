@@ -57,6 +57,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 String UID = "HN-00002";
 
+String ACTIVITY = "";
+
 String LoRaData;
 
 // Replace with your network credentials
@@ -468,16 +470,9 @@ setInterval(()=>{
 
 )rawliteral";
 
-
 void displayMsg(String message)
 {
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.println("SEANTINEL NODE");
-  display.println("ID:"+UID);
-  display.setCursor(0, 20);
-  display.print(message);
-  display.display();
+  ACTIVITY = message;
 }
 
 void sendData(String LORA_DATA)
@@ -491,7 +486,6 @@ void sendData(String LORA_DATA)
 void echoMechanism()
 {
 
-
   // testing echo
   int packetSize = LoRa.parsePacket();
   if (packetSize)
@@ -503,7 +497,7 @@ void echoMechanism()
     {
       LoRaData = LoRa.readString();
       sendData(LoRaData);
-       displayMsg("echo message!");
+      displayMsg("echo message!");
       delay(2000);
     }
   }
@@ -518,13 +512,13 @@ void setup()
   // Serial Port for communicating to GPS Module
   Serial.begin(9600);
 
-    //reset OLED display via software
+  //reset OLED display via software
   pinMode(OLED_RST, OUTPUT);
   digitalWrite(OLED_RST, LOW);
   delay(20);
   digitalWrite(OLED_RST, HIGH);
 
-   //initialize OLED
+  //initialize OLED
   Wire.begin(OLED_SDA, OLED_SCL);
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false))
   { // Address 0x3C for 128x32
@@ -533,12 +527,13 @@ void setup()
       ; // Don't proceed, loop forever
   }
 
-   display.clearDisplay();
+  display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.println("SEANTINEL NODE");
-  display.println("ID: "+UID);
+  display.println("ID: " + UID);
+  display.println(">: " + ACTIVITY);
   display.display();
 
   // set manual button pinmode
@@ -613,17 +608,17 @@ void loop()
   int EMB = digitalRead(RESCUE_BTN);
   int IFB = digitalRead(ILLEGAL_BTN);
 
-//  if (EMB == HIGH)
-//  {
-//    String eReport = report("emergency", "EMERGENCY DISTRESS CALL", "EMERGENCY DISTRESS CALL");
-//    sendData(eReport);
-//  }
-//
-//  if (IFB == HIGH)
-//  {
-//    String eReport = report("illegal_fishing", "Illegal Fishing Activity", "Illegal Fishing Alert!");
-//    sendData(eReport);
-//  }
+  //  if (EMB == HIGH)
+  //  {
+  //    String eReport = report("emergency", "EMERGENCY DISTRESS CALL", "EMERGENCY DISTRESS CALL");
+  //    sendData(eReport);
+  //  }
+  //
+  //  if (IFB == HIGH)
+  //  {
+  //    String eReport = report("illegal_fishing", "Illegal Fishing Activity", "Illegal Fishing Alert!");
+  //    sendData(eReport);
+  //  }
 
   // for echoing data
   echoMechanism();
