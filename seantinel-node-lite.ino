@@ -44,18 +44,19 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 // device unique ID (can be changed)
 
-String UID = "HN-00003";
+String UID = "HN-00004";
 
 String LoRaData;
 
 // Replace with your network credentials
-const char *ssid = "Seantinel_Node_3";
+const char *ssid = "Seantinel_Node_4";
 const char *password = "";
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-String device_data = "{\"type\": \"Seantinel Node Lite\", \"version\": 0.0.1, \"firmware\": \"Node Lite\",\"device_id\": \"HN-00003\"}";
+String device_data = "{\"type\": \"Seantinel Node Lite\", \"version\": 0.0.1, \"firmware\": \"Node Lite\",\"device_id\": \"HN-XXXX\"}";
+
 
 void sendData(String LORA_DATA)
 {
@@ -131,7 +132,8 @@ void setup()
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "application/json", device_data);
+    device_data.replace("HN-XXXX",UID);
+    request->send(200, "text/plain", device_data);
   });
 
   // for sending data (test)
@@ -146,6 +148,8 @@ void setup()
       String webData = p->value();
 
       String formData = webData;
+      // replace playload id with device id
+      formData.replace("HN-XXXX",UID);
 
       sendData(formData);
     }
@@ -178,7 +182,5 @@ void loop()
     Serial.println("e1:" + LoRaData);
   }
 
-  // node beacon test
-  //  sendData("Data from Node 1");
-  //  Serial.println("Sending data from:" + UID);
+
 }
