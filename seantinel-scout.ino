@@ -5,7 +5,7 @@ This is the firmware for the seantinel scout device,
 which is used to list for LoRa data transmissions and display the data on a HTTP endpoint
 ----------------------------------
 Author: Bryce Narciso C. Mercines (c) 2021
-version: 0.0.1
+version: 0.0.2
 */
 
 // Import required libraries
@@ -152,7 +152,7 @@ void loop()
 {
 
   // for echoing data
-  // testing echo
+  // testing echo .
   int packetSize = LoRa.parsePacket();
   Serial.println("pz: " + packetSize);
   if (packetSize)
@@ -163,6 +163,7 @@ void loop()
     while (LoRa.available())
     {
       LoRaData = LoRa.readString();
+      current_data = LoRa.readString();
     }
 
     sendData("e1:" + LoRaData);
